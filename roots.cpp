@@ -52,7 +52,18 @@ void load_volume_table()
     fstab = fs_mgr_read_fstab("/etc/recovery.fstab");
     if (!fstab) {
         LOGE("failed to read /etc/recovery.fstab\n");
-        return;
+
+        char fstab_path[PATH_MAX+1] = "/fstab.";
+        if (!property_get("ro.hardware", fstab_path+strlen(fstab_path), "")) {
+            LOGE("failed to get ro.hardware");
+            return;
+        }
+
+        fstab = fs_mgr_read_fstab(fstab_path);
+        if (!fstab) {
+            LOGE("failed to read %s", fstab_path);
+            return;
+        }
     }
 
     ret = fs_mgr_add_entry(fstab, "/tmp", "ramdisk", "ramdisk");
